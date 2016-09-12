@@ -1,0 +1,18 @@
+Package: mcMDISolver
+Type: Package
+Title: Monte Carlo Minimum Discrimination Information Solver
+Version: 0.0.0.9000
+Imports:
+    nleqslv,
+    parallel
+Authors@R: person("Miguel", "Biron", email = "miguelbl9@gmail.com", role = c("aut", "cre"))
+Description: This package implements a Monte Carlo approach to solving Minimum
+    Discrimination Information (also called Minimum Cross - Entropy) with linear
+    constraints for arbitrary distributions in $\mathbb{R}^n$. Parallel implementation
+    is provided for faster computations.
+License: GPL-3
+LazyData: TRUE
+RoxygenNote: 5.0.1
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr
