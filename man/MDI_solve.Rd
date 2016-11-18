@@ -2,27 +2,131 @@
 % Please edit documentation in R/solver.R
 \name{MDI_solve}
 \alias{MDI_solve}
-\title{Solve MDI with linear constraints using a Monte Carlo approach.}
+\title{Solve MDI with linear equality constraints using a Monte Carlo approach.}
 \usage{
-MDI_solve(X, f, m, l_start = NULL, maxit = 200, cl = NULL)
+MDI_solve(X, f, m, l_start = rep(0, k + 1), control = list(trace = 1),
+  cl = NULL)
 }
 \arguments{
-\item{X}{an \eqn{S x n} matrix containing samples from \eqn{p}}
+\item{X}{an \eqn{S x n} matrix containing \eqn{S} samples from \eqn{p}}
 
-\item{f}{a function returning a vector of size \eqn{k} that evaluates the LHS of restrictions}
+\item{f}{a function returning a vector of size \eqn{k} that evaluates
+the LHS of restrictions}
 
 \item{m}{a vector of size \eqn{k} with the RHS of the restrictions}
 
-\item{l_start}{a guess of the optimal \eqn{k + 1} lambdas. Default is \eqn{0_{k+1}}}
+\item{l_start}{a guess of the optimal \eqn{k + 1} lambdas. Default is \code{rep(0, k + 1)}}
 
-\item{maxit}{maximum number of iterations for \code{nleqslv}. Default is 200}
+\item{control}{a list of parameters passed to \code{nleqslv}}
 
-\item{cl}{a cluster object for parallelized implementation.}
+\item{cl}{a cluster object for parallelized implementation}
 }
 \value{
-An object of class \code{nleqslv}
+A list as returned by \code{nleqslv}
 }
 \description{
-Solve MDI with linear constraints using a Monte Carlo approach.
+This function solves a Minimum Discrimination Information problem with linear
+equality constraints, as described in the package vignette.
+}
+\details{
+The non - linear set of equations is solved using package \code{nleqslv}
+with the Newton method. The rest of the parameters of this solver that
+are not passed through the \code{control} list are left in their
+default values.
+
+This method assumes that you are able to sample from the \eqn{p} distribution
+in order to produce the matrix \code{X}. If this is not the case, then
+a robust alternative is to use an MCMC method (such as the Metropolis algorithm),
+assuming that you can at least evaluate the density of \eqn{p}.
+
+The function \code{f} should take as input a vector \eqn{x} of size \eqn{n} (the
+dimension of the space where \eqn{x} lives) and return a vector of size
+\eqn{k} (the number of non-trivial conditions), such that the first component
+of \eqn{f(x)} corresponds to the value of the first restriction function evaluated
+at \eqn{x}, the second component to the second restriction, and so on.
+
+Keep in mind that if you use the parallelized implementation, and \code{f}
+depends on some other variables, you need to export those using
+\code{parallel::clusterExport}.
+}
+\examples{
+#################################################################
+# Toy example:
+#
+# p: multivariate normal (0, \\Sigma)
+# Restrictions: force 0.5 mass of the marginals to lie above some
+#               randomly chosen thresholds (chi).
+# The above implies:
+#                   n = k
+#                   f(x) = (x > chi)
+#                   m = rep(0.5, n)
+#################################################################
+
+set.seed(1313) # for reproducibility
+
+n = 9 # number of variables
+k = n # number of restrictions
+S = 200000 # number of samples
+
+# restrictions
+chi = rnorm(n, 1.96, 0.5) # critical values
+f = function(x, c = chi){ # vectorized over the size of x (n)
+  return(x > chi)
+}
+m = rep(.5, k) # rhs of restrictions
+
+# p-sampler
+# p is mvnorm with average cor = rho
+rho = 0.6 # average correlation
+R = diag(n)
+R[upper.tri(R)] = pmin(pmax(rnorm(n*(n-1)/2, rho, 0.1), -1), 1)
+R[lower.tri(R)] = t(R)[lower.tri(R)]
+
+## SOLVE
+
+start.time = proc.time()
+fit_MDI = MDI_solve(mvtnorm::rmvnorm(n = S, sigma = R), f = f, m = m)
+print(proc.time() - start.time)
+
+## SOLVE: parallelized implementation
+
+cl = parallel::makeCluster(getOption("cl.cores", 2))
+
+# export additional parameters of f
+parallel::clusterExport(cl, list("chi"))
+
+start.time = proc.time()
+fit_MDI = MDI_solve(mvtnorm::rmvnorm(n = S, sigma = R), f = f, m = m, cl = cl)
+print(proc.time() - start.time)
+
+parallel::stopCluster(cl)
+
+## Examine q distribution
+# Draw samples using Metropolis algorithm
+
+# log density of q
+log_dq = function(x, l = fit_MDI$x){
+  return(mvtnorm::dmvnorm(x, sigma = R, log = T) - as.numeric(crossprod(l, c(1, f(x)))))
+}
+
+# draw from q
+mcmc_S = 2 * S
+burn = trunc(0.1 * mcmc_S) # number of samples to burn
+sample_q = mcmc::metrop(log_dq, initial = chi, nbatch = mcmc_S + burn)
+X_q = sample_q$batch[-(1:burn), ]
+
+# histograms
+# note the sudden increase in density around chi
+par(mfrow = c(3, 3))
+for(i in 1:n) hist(X_q[,i], main = paste("chi =", round(chi[i], 2)), xlab = "")
+par(mfrow = c(1, 1))
+
+# check restrictions close to zero
+rowMeans(apply(X_q, 1, f)) - m
+}
+\seealso{
+\code{\link{parallel}}, \code{\link{nleqslv}} for details
+on this non - linear equation solver, and \code{\link{mcmc}} for an
+implementation of the Metropolis algorithm.
 }
 

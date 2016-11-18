@@ -4,7 +4,7 @@
 #'
 #' @inheritParams MDI_solve
 #' @return An object of class \code{nleqslv}
-MDI_solve_par = function(X, f, m, l_start = NULL, maxit = 200, cl){
+MDI_solve_par = function(X, f, m, l_start, control, cl){
 
   S = length(X) # number of samples
 
@@ -24,7 +24,7 @@ MDI_solve_par = function(X, f, m, l_start = NULL, maxit = 200, cl){
   # solve
   cat("Launching solver\n\n")
   fit_slv = nleqslv::nleqslv(x = l_start, fn = F_fun_par, jac = J_fun_par, S = S, m = m,
-                             cl = cl, method = "Newton", control=list(maxit = maxit, trace = 1))
+                             cl = cl, method = "Newton", control = control)
 
   cat(paste0("\nnleqslv ended with condition ", fit_slv$termcd, ": ", fit_slv$message, "\n\n"))
 

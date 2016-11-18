@@ -11,6 +11,8 @@ F_fun_par(L, S, m, cl)
 
 \item{S}{number of samples}
 
+\item{m}{rhs of restrictions}
+
 \item{cl}{a cluster}
 }
 \value{

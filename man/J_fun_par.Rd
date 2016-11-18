@@ -11,6 +11,8 @@ J_fun_par(L, S, m, cl)
 
 \item{S}{number of samples}
 
+\item{m}{rhs of restrictions. Ignored.}
+
 \item{cl}{a cluster}
 }
 \value{

@@ -2,12 +2,16 @@
 % Please edit documentation in R/solver.R
 \name{F_fun}
 \alias{F_fun}
-\title{Evaluate target function for equation solver serially}
+\title{Evaluate target function for equation solver}
 \usage{
 F_fun(L, M, m)
 }
 \arguments{
 \item{L}{current \eqn{\lambda} estimate of size \eqn{k+1}}
+
+\item{M}{a list of matrices}
+
+\item{m}{rhs of restrictions}
 }
 \value{
 A vector of size \eqn{k+1}

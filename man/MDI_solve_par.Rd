@@ -4,20 +4,21 @@
 \alias{MDI_solve_par}
 \title{Solve MDI in parallel}
 \usage{
-MDI_solve_par(X, f, m, l_start = NULL, maxit = 200, cl)
+MDI_solve_par(X, f, m, l_start, control, cl)
 }
 \arguments{
-\item{X}{an \eqn{S x n} matrix containing samples from \eqn{p}}
+\item{X}{an \eqn{S x n} matrix containing \eqn{S} samples from \eqn{p}}
 
-\item{f}{a function returning a vector of size \eqn{k} that evaluates the LHS of restrictions}
+\item{f}{a function returning a vector of size \eqn{k} that evaluates
+the LHS of restrictions}
 
 \item{m}{a vector of size \eqn{k} with the RHS of the restrictions}
 
-\item{l_start}{a guess of the optimal \eqn{k + 1} lambdas. Default is \eqn{0_{k+1}}}
+\item{l_start}{a guess of the optimal \eqn{k + 1} lambdas. Default is \code{rep(0, k + 1)}}
 
-\item{maxit}{maximum number of iterations for \code{nleqslv}. Default is 200}
+\item{control}{a list of parameters passed to \code{nleqslv}}
 
-\item{cl}{a cluster object for parallelized implementation.}
+\item{cl}{a cluster object for parallelized implementation}
 }
 \value{
 An object of class \code{nleqslv}

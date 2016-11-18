@@ -2,12 +2,16 @@
 % Please edit documentation in R/solver.R
 \name{J_fun}
 \alias{J_fun}
-\title{Evaluate target function's Jacobian for equation solver serially}
+\title{Evaluate target function's Jacobian for equation solver}
 \usage{
 J_fun(L, M, m)
 }
 \arguments{
 \item{L}{current \eqn{\lambda} estimate of size \eqn{k+1}}
+
+\item{M}{a list of matrices}
+
+\item{m}{rhs of restrictions. Ignored.}
 }
 \value{
 A matrix of size \eqn{(k+1) x (k+1)}
