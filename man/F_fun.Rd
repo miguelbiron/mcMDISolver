@@ -4,7 +4,7 @@
 \alias{F_fun}
 \title{Evaluate target function for equation solver}
 \usage{
-F_fun(L, M, m)
+F_fun(L, M, m, ...)
 }
 \arguments{
 \item{L}{current \eqn{\lambda} estimate of size \eqn{k+1}}

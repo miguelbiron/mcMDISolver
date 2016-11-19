@@ -4,29 +4,22 @@
 #'
 #' @inheritParams MDI_solve
 #' @return An object of class \code{nleqslv}
-MDI_solve_par = function(X, f, m, l_start, control, cl){
+MDI_solve_par = function(M, f, m, l_start, control, cl){
 
-  S = length(X) # number of samples
+  S = length(M) # number of samples
 
-  # create environment with variables needed for F_fun and J_fun
-  cat("Creating auxiliary list of matrices M\n")
-  M = parallel::parLapply(cl, X, fun = function(x){
-    return(tcrossprod(c(1, f(x))))
-  })
+  # dividing the work among workers
+  sched = split(1:S, ceiling(1:S / (S / length(cl))))
 
-  # throw away matrix of samples and take out garbage
-  rm(X); gc(verbose = F)
-
-  # export M
-  cat("Exporting M to workers\n\n")
-  parallel::clusterExport(cl = cl, varlist = list("M"), envir = environment())
+  # export M and schedule
+  cat("Exporting data to workers\n\n")
+  parallel::clusterExport(cl = cl, varlist = list("M", "sched"),
+                          envir = environment())
 
   # solve
   cat("Launching solver\n\n")
   fit_slv = nleqslv::nleqslv(x = l_start, fn = F_fun_par, jac = J_fun_par, S = S, m = m,
                              cl = cl, method = "Newton", control = control)
-
-  cat(paste0("\nnleqslv ended with condition ", fit_slv$termcd, ": ", fit_slv$message, "\n\n"))
 
   return(fit_slv)
 
@@ -40,19 +33,20 @@ MDI_solve_par = function(X, f, m, l_start, control, cl){
 #' @param S number of samples
 #' @param cl a cluster
 #' @return A matrix of size \eqn{(k+1) x (k+1)}
-J_fun_par = function(L, cl, S, ...){
+J_fun_par = function(L, S, cl, ...){
 
-  # IDEA: parLapply sobre 1:n_slaves
-  #       divide la lista M en n_slaves partes
-  #       cada slave luego trabaja sobre 1 fraccion de la lista de matrices
-  #       devuelve el resultado ya reducido
-  #       finalmente se reduce un total de n_slaves resultados
+  tempo = parallel::parLapply(cl, 1:length(cl), function(i, L){
 
-  tempo = parallel::parLapply(cl, 1:S, function(i, L){
-    A = M[[i]] # M should have been exported
-    exp(-as.numeric(crossprod(L[-1], A[-1, 1]))) * A
+    # assign a subset of M
+    A = M[sched[[i]]] # M should have been exported
+
+    # call the serialized version of the function with a subset of the matrices
+    return(J_fun(L, A) * length(A)) # serialized version returns value divided by length
+
   }, L)
-  return(exp(-L[1]) * Reduce('+', tempo) / S)
+
+  return(Reduce('+', tempo) / S)
+
 }
 
 #' Evaluate target function for equation solver in cluster
@@ -63,10 +57,16 @@ J_fun_par = function(L, cl, S, ...){
 #' @param S number of samples
 #' @param cl a cluster
 #' @return A vector of size \eqn{k+1}
-F_fun_par = function(L, cl, S, m, ...){
-  tempo = parallel::parLapply(cl, 1:S, function(i, L){
-    A = M[[i]] # M should have been exported
-    exp(-as.numeric(crossprod(L[-1], A[-1, 1]))) * A[, 1]
-  }, L)
-  return(c(1, m) - exp(-L[1]) * Reduce('+', tempo) / S)
+F_fun_par = function(L, m, S, cl, ...){
+  tempo = parallel::parLapply(cl, 1:length(cl), function(i, L, m){
+
+    # assign a subset of M
+    A = M[sched[[i]]] # M should have been exported
+
+    # call the serialized version of the function with a subset of the matrices
+    return((F_fun(L, A, m) - c(1, m)) * length(A)) # correct for serial version output
+
+  }, L, m)
+
+  return(c(1, m) + Reduce('+', tempo) / S)
 }

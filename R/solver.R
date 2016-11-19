@@ -6,7 +6,7 @@
 #' @param M a list of matrices
 #' @param m rhs of restrictions. Ignored.
 #' @return A matrix of size \eqn{(k+1) x (k+1)}
-J_fun = function(L, M, m){
+J_fun = function(L, M, ...){
   tempo = lapply(M, function(A){exp(-as.numeric(crossprod(L[-1], A[-1, 1]))) * A})
   return(exp(-L[1]) * Reduce('+', tempo) / length(tempo))
 }
@@ -19,7 +19,7 @@ J_fun = function(L, M, m){
 #' @param M a list of matrices
 #' @param m rhs of restrictions
 #' @return A vector of size \eqn{k+1}
-F_fun = function(L, M, m){
+F_fun = function(L, M, m, ...){
   tempo = lapply(M, function(A){exp(-as.numeric(crossprod(L[-1], A[-1, 1]))) * A[, 1]})
   return(c(1, m) - exp(-L[1]) * Reduce('+', tempo) / length(tempo))
 }
@@ -76,24 +76,6 @@ MDI_solve = function(X, f, m, l_start = rep(0, k + 1), control=list(trace = 1), 
   X = split(t(X), rep(1:nrow(X), each = ncol(X)))
   gc(verbose = F)
 
-  if(is.null(cl)){
-    cat("'cl' argument not present. Using serial implementation\n")
-    return(MDI_solve_ser(X = X, f = f, m = m, l_start = l_start, control = control))
-  }else{
-    cat("Using parallelized implementation\n")
-    return(MDI_solve_par(X = X, f = f, m = m, l_start = l_start, control = control, cl = cl))
-  }
-
-}
-
-#' Solve MDI serially.
-#'
-#' Shouldn't be called directly by user.
-#'
-#' @inheritParams MDI_solve
-#' @return An object of class \code{nleqslv}
-MDI_solve_ser = function(X, f, m, l_start, control){
-
   # create environment with variables needed for F_fun and J_fun
   cat("Creating auxiliary list of matrices M\n")
   M = lapply(X, FUN = function(x){
@@ -103,12 +85,32 @@ MDI_solve_ser = function(X, f, m, l_start, control){
   # throw away matrix of samples and take out garbage
   rm(X); gc(verbose = F)
 
+  if(is.null(cl)){
+    cat("'cl' argument not present. Using serial implementation\n")
+    fit_slv = MDI_solve_ser(M = M, f = f, m = m, l_start = l_start, control = control)
+  }else{
+    cat("Using parallelized implementation\n")
+    fit_slv = MDI_solve_par(M = M, f = f, m = m, l_start = l_start, control = control, cl = cl)
+  }
+
+  cat(paste0("\nnleqslv ended with condition ", fit_slv$termcd, ": ", fit_slv$message, "\n\n"))
+
+  return(fit_slv)
+
+}
+
+#' Solve MDI serially.
+#'
+#' Shouldn't be called directly by user.
+#'
+#' @inheritParams MDI_solve
+#' @return An object of class \code{nleqslv}
+MDI_solve_ser = function(M, f, m, l_start, control){
+
   # solve
   cat("Launching solver\n\n")
   fit_slv = nleqslv::nleqslv(x = l_start, fn = F_fun, jac = J_fun, M = M, m = m,
                              method = "Newton", control = control)
-
-  cat(paste0("\nnleqslv ended with condition ", fit_slv$termcd, ": ", fit_slv$message, "\n\n"))
 
   return(fit_slv)
 

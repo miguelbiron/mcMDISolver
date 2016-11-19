@@ -4,14 +4,14 @@
 \alias{J_fun_par}
 \title{Evaluate target function's Jacobian for equation solver in cluster}
 \usage{
-J_fun_par(L, cl, S, ...)
+J_fun_par(L, S, cl, ...)
 }
 \arguments{
 \item{L}{current \eqn{\lambda} estimate of size \eqn{k+1}}
 
-\item{cl}{a cluster}
-
 \item{S}{number of samples}
+
+\item{cl}{a cluster}
 }
 \value{
 A matrix of size \eqn{(k+1) x (k+1)}

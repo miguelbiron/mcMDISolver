@@ -4,11 +4,9 @@
 \alias{MDI_solve_par}
 \title{Solve MDI in parallel}
 \usage{
-MDI_solve_par(X, f, m, l_start, control, cl)
+MDI_solve_par(M, f, m, l_start, control, cl)
 }
 \arguments{
-\item{X}{an \eqn{S x n} matrix containing \eqn{S} samples from \eqn{p}}
-
 \item{f}{a function returning a vector of size \eqn{k} that evaluates
 the LHS of restrictions}
 

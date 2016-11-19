@@ -4,11 +4,9 @@
 \alias{MDI_solve_ser}
 \title{Solve MDI serially.}
 \usage{
-MDI_solve_ser(X, f, m, l_start, control)
+MDI_solve_ser(M, f, m, l_start, control)
 }
 \arguments{
-\item{X}{an \eqn{S x n} matrix containing \eqn{S} samples from \eqn{p}}
-
 \item{f}{a function returning a vector of size \eqn{k} that evaluates
 the LHS of restrictions}
 

@@ -4,7 +4,7 @@
 \alias{J_fun}
 \title{Evaluate target function's Jacobian for equation solver}
 \usage{
-J_fun(L, M, m)
+J_fun(L, M, ...)
 }
 \arguments{
 \item{L}{current \eqn{\lambda} estimate of size \eqn{k+1}}
