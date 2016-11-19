@@ -62,11 +62,13 @@ depends on some other variables, you need to export those using
 #                   m = rep(0.5, n)
 #################################################################
 
+library(mcMDISolver)
+
 set.seed(1313) # for reproducibility
 
 n = 9 # number of variables
 k = n # number of restrictions
-S = 200000 # number of samples
+S = 20000 # number of samples
 
 # restrictions
 chi = rnorm(n, 1.96, 0.5) # critical values
@@ -82,15 +84,14 @@ R = diag(n)
 R[upper.tri(R)] = pmin(pmax(rnorm(n*(n-1)/2, rho, 0.1), -1), 1)
 R[lower.tri(R)] = t(R)[lower.tri(R)]
 
-## SOLVE
-
+## SOLVE: serial implementation
 start.time = proc.time()
 fit_MDI = MDI_solve(mvtnorm::rmvnorm(n = S, sigma = R), f = f, m = m)
 print(proc.time() - start.time)
 
 ## SOLVE: parallelized implementation
 
-cl = parallel::makeCluster(getOption("cl.cores", 2))
+cl = parallel::makeCluster(getOption("cl.cores", 3))
 
 # export additional parameters of f
 parallel::clusterExport(cl, list("chi"))

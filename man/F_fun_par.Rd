@@ -4,16 +4,16 @@
 \alias{F_fun_par}
 \title{Evaluate target function for equation solver in cluster}
 \usage{
-F_fun_par(L, S, m, cl)
+F_fun_par(L, cl, S, m, ...)
 }
 \arguments{
 \item{L}{current \eqn{\lambda} estimate of size \eqn{k+1}}
 
+\item{cl}{a cluster}
+
 \item{S}{number of samples}
 
 \item{m}{rhs of restrictions}
-
-\item{cl}{a cluster}
 }
 \value{
 A vector of size \eqn{k+1}

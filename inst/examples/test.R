@@ -16,7 +16,7 @@ set.seed(1313) # for reproducibility
 
 n = 9 # number of variables
 k = n # number of restrictions
-S = 10000 # number of samples
+S = 20000 # number of samples
 
 # restrictions
 chi = rnorm(n, 1.96, 0.5) # critical values
@@ -39,7 +39,7 @@ print(proc.time() - start.time)
 
 ## SOLVE: parallelized implementation
 
-cl = parallel::makeCluster(getOption("cl.cores", 2))
+cl = parallel::makeCluster(getOption("cl.cores", 3))
 
 # export additional parameters of f
 parallel::clusterExport(cl, list("chi"))

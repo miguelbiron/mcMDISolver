@@ -40,11 +40,18 @@ MDI_solve_par = function(X, f, m, l_start, control, cl){
 #' @param S number of samples
 #' @param cl a cluster
 #' @return A matrix of size \eqn{(k+1) x (k+1)}
-J_fun_par = function(L, S, m, cl){
-  tempo = parallel::parLapply(cl, 1:S, function(L, i){
-    A = M[[i]]
+J_fun_par = function(L, cl, S, ...){
+
+  # IDEA: parLapply sobre 1:n_slaves
+  #       divide la lista M en n_slaves partes
+  #       cada slave luego trabaja sobre 1 fraccion de la lista de matrices
+  #       devuelve el resultado ya reducido
+  #       finalmente se reduce un total de n_slaves resultados
+
+  tempo = parallel::parLapply(cl, 1:S, function(i, L){
+    A = M[[i]] # M should have been exported
     exp(-as.numeric(crossprod(L[-1], A[-1, 1]))) * A
-    }, L = L)
+  }, L)
   return(exp(-L[1]) * Reduce('+', tempo) / S)
 }
 
@@ -56,10 +63,10 @@ J_fun_par = function(L, S, m, cl){
 #' @param S number of samples
 #' @param cl a cluster
 #' @return A vector of size \eqn{k+1}
-F_fun_par = function(L, S, m, cl){
-  tempo = parallel::parLapply(cl, 1:S, function(L, i){
-    A = M[[i]]
+F_fun_par = function(L, cl, S, m, ...){
+  tempo = parallel::parLapply(cl, 1:S, function(i, L){
+    A = M[[i]] # M should have been exported
     exp(-as.numeric(crossprod(L[-1], A[-1, 1]))) * A[, 1]
-    }, L = L)
+  }, L)
   return(c(1, m) - exp(-L[1]) * Reduce('+', tempo) / S)
 }
