@@ -126,4 +126,6 @@ The means are close to the desired output. Increase the size of the sample passe
 Additional information
 ----------------------
 
-Run `?MDI_solve` for a different example. Also, check the package vignette to get a better understanding of the method used.
+Run `?MDI_solve` for a different example.
+
+Also, check the pdf file at the root for a description of MDI estimation and the method used to solve it.
