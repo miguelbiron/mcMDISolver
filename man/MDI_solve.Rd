@@ -62,8 +62,6 @@ depends on some other variables, you need to export those using
 #                   m = rep(0.5, n)
 #################################################################
 
-library(mcMDISolver)
-
 set.seed(1313) # for reproducibility
 
 n = 9 # number of variables
@@ -86,7 +84,7 @@ R[lower.tri(R)] = t(R)[lower.tri(R)]
 
 ## SOLVE: serial implementation
 start.time = proc.time()
-fit_MDI = MDI_solve(mvtnorm::rmvnorm(n = S, sigma = R), f = f, m = m)
+fit_MDI = mcMDISolver::MDI_solve(mvtnorm::rmvnorm(n = S, sigma = R), f = f, m = m)
 print(proc.time() - start.time)
 print(fit_MDI$x)
 
@@ -98,7 +96,7 @@ cl = parallel::makeCluster(getOption("cl.cores", 3))
 parallel::clusterExport(cl, list("chi"))
 
 start.time = proc.time()
-fit_MDI = MDI_solve(mvtnorm::rmvnorm(n = S, sigma = R), f = f, m = m, cl = cl)
+fit_MDI = mcMDISolver::MDI_solve(mvtnorm::rmvnorm(n = S, sigma = R), f = f, m = m, cl = cl)
 print(proc.time() - start.time)
 print(fit_MDI$x)
 parallel::stopCluster(cl)

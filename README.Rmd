@@ -1,0 +1,98 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
+```
+
+# mcMDISolver
+
+This package solves MDI estimation problems with linear equality constraints, using a Monte Carlo approach.
+
+## Installation
+
+1. Install package `devtools`
+2. Run `devtools::install_github("miguelbiron/mcMDISolver")`
+
+## Usage
+
+The only function that you will use is `MDI_solve`, feeding it with
+
+- A matrix `X` with samples from your prior distribution $p$.
+- A vectorized function `f` that evaluates all equality constraints simultaneously.
+- A vector `m` with the right hand side of the constraints.
+
+The output corresponds to a list as returned by `nleqslv::nleqslv`, the non-linear equation solver used.
+
+## Toy example
+
+In this toy example we will shift the mean of a 9-dimensional multivariate normal distribution.
+
+```{r}
+library(mcMDISolver)
+library(mvtnorm) # provides multivariate normal utils
+library(mcmc) # to draw samples from the posterior
+
+set.seed(1313) # for reproducibility
+
+n = 9 # number of variables
+k = n # number of restrictions equal to the number of variables
+S = 50000 # number of samples to draw from prior distribution
+
+# restrictions function
+# input: vector of size n. output: vector of size k
+f = function(x){ 
+  return(x) # first moment
+}
+m = rep(1, k) # rhs of restrictions. shift mean from 0 to 1
+
+# original mean vector
+mu_0 = rnorm(n)
+print(mu_0) # inspect the mean
+```
+
+Now we use the solver function to find the Lagrange multipliers
+```{r}
+## SOLVE
+fit_MDI = MDI_solve(
+  X = rmvnorm(n = S, mean = mu_0),
+  f = f,
+  m = m)
+```
+
+Let us take a look at the resulting vector of lagrange multipliers
+```{r}
+print(fit_MDI$x)
+```
+
+Finally, let us check to see that we have actually shifted the mean to where we wanted. To do this, we will sample values from the posterior distribution using the Metropolis algorithm.
+
+```{r}
+# Draw samples using Metropolis algorithm
+# log density of q
+log_dq = function(x, l = fit_MDI$x){
+  return(dmvnorm(x, mean = mu_0, log = T) - as.numeric(crossprod(l, c(1, f(x)))))
+}
+
+# draw from q
+mcmc_S = 50000
+burn = trunc(0.1 * mcmc_S) # number of samples to burn
+sample_q = metrop(log_dq, initial = m, nbatch = mcmc_S + burn) # samples should be around te new mean -> m
+X_q = sample_q$batch[-(1:burn), ]
+
+# check means equal to 1
+print(colMeans(X_q))
+```
+
+The means are close to the desired output. Increase the size of the sample passed to `MDI_solve` for better accuracy,
+
+## Additional information
+
+Run `?MDI_solve` for a different example. Also, check the package vignette to get a better understanding of the method used.
