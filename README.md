@@ -3,7 +3,7 @@
 mcMDISolver
 ===========
 
-This package solves MDI estimation problems with linear equality constraints, using a Monte Carlo approach.
+This package solves MDI estimation problems (or minimum cross entropy) with linear equality constraints, using a Monte Carlo approach.
 
 Installation
 ------------
