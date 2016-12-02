@@ -72,13 +72,9 @@ MDI_solve = function(X, f, m, l_start = rep(0, k + 1), control=list(trace = 1), 
     return(NULL)
   }
 
-  # convert X to list of rows
-  X = split(t(X), rep(1:nrow(X), each = ncol(X)))
-  gc(verbose = F)
-
-  # create environment with variables needed for F_fun and J_fun
   cat("Creating auxiliary list of matrices M\n")
-  M = lapply(X, FUN = function(x){
+  M = lapply(split(t(X), rep(1:nrow(X), each = ncol(X))), # convert X to list of rows
+             FUN = function(x){
     return(tcrossprod(c(1, f(x))))
   })
 

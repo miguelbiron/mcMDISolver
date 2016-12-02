@@ -38,7 +38,7 @@ print(fit_MDI$x)
 
 ## SOLVE: parallelized implementation
 
-cl = parallel::makeCluster(getOption("cl.cores", 3))
+cl = parallel::makeCluster(getOption("cl.cores", 2))
 
 # export additional parameters of f
 parallel::clusterExport(cl, list("chi"))
