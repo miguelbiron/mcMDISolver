@@ -1,26 +1,28 @@
 #' Evaluate target function's Jacobian for equation solver
 #'
-#' This function shouln't be called directly by the user.
-#'
 #' @param L current \eqn{\lambda} estimate of size \eqn{k+1}
 #' @param M a list of matrices
-#' @param m rhs of restrictions. Ignored.
+#' @param ... currently ignored
 #' @return A matrix of size \eqn{(k+1) x (k+1)}
+#' @export
 J_fun = function(L, M, ...){
-  tempo = lapply(M, function(A){exp(-as.numeric(crossprod(L[-1], A[-1, 1]))) * A})
+  tempo = lapply(M, function(A){
+    exp(-sum(L[-1] * A[-1, 1])) * A
+    })
   return(exp(-L[1]) * Reduce('+', tempo) / length(tempo))
 }
 
 #' Evaluate target function for equation solver
 #'
-#' This function shouln't be called directly by the user.
-#'
 #' @param L current \eqn{\lambda} estimate of size \eqn{k+1}
 #' @param M a list of matrices
 #' @param m rhs of restrictions
 #' @return A vector of size \eqn{k+1}
+#' @export
 F_fun = function(L, M, m, ...){
-  tempo = lapply(M, function(A){exp(-as.numeric(crossprod(L[-1], A[-1, 1]))) * A[, 1]})
+  tempo = lapply(M, function(A){
+    exp(-sum(L[-1] * A[-1, 1])) * A[, 1]
+    })
   return(c(1, m) - exp(-L[1]) * Reduce('+', tempo) / length(tempo))
 }
 

@@ -24,4 +24,3 @@ An object of class \code{nleqslv}
 \description{
 Shouldn't be called directly by user.
 }
-

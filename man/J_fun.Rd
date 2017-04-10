@@ -11,12 +11,11 @@ J_fun(L, M, ...)
 
 \item{M}{a list of matrices}
 
-\item{m}{rhs of restrictions. Ignored.}
+\item{...}{currently ignored}
 }
 \value{
 A matrix of size \eqn{(k+1) x (k+1)}
 }
 \description{
-This function shouln't be called directly by the user.
+Evaluate target function's Jacobian for equation solver
 }
-

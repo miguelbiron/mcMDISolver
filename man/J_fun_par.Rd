@@ -12,6 +12,8 @@ J_fun_par(L, S, cl, ...)
 \item{S}{number of samples}
 
 \item{cl}{a cluster}
+
+\item{...}{currently ignored}
 }
 \value{
 A matrix of size \eqn{(k+1) x (k+1)}
@@ -19,4 +21,3 @@ A matrix of size \eqn{(k+1) x (k+1)}
 \description{
 This function shouldn't be called directly by the user.
 }
-

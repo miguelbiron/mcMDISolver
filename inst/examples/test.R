@@ -17,9 +17,9 @@ k = n # number of restrictions
 S = 400000 # number of samples
 
 # restrictions
-chi = rnorm(n, 1.96, 0.5) # critical values
+chi = rnorm(n, 1.96, 0.1) # critical values
 f = function(x, c = chi){ # vectorized over the size of x (n)
-  return(x > chi)
+  return(x > c)
 }
 m = rep(.5, k) # rhs of restrictions
 
@@ -27,8 +27,18 @@ m = rep(.5, k) # rhs of restrictions
 # p is mvnorm with average cor = rho
 rho = 0.6 # average correlation
 R = diag(n)
-R[upper.tri(R)] = pmin(pmax(rnorm(n*(n-1)/2, rho, 0.1), -1), 1)
+R[upper.tri(R)] = pmin(pmax(rnorm(n*(n-1)/2, rho, 0.01), -1), 1)
 R[lower.tri(R)] = t(R)[lower.tri(R)]
+
+rp = function(S){
+  return(mvtnorm::rmvnorm(n = S, sigma = R))
+}
+
+## SOLVE: stochastic
+start.time = proc.time()
+fit_MDI = mcMDISolver::solve_stoch(rp = rp, f = f, m = m)
+print(proc.time() - start.time)
+print(fit_MDI)
 
 ## SOLVE: serial implementation
 start.time = proc.time()

@@ -21,4 +21,3 @@ A vector of size \eqn{k+1}
 \description{
 This function shouldn't be called directly by the user.
 }
-

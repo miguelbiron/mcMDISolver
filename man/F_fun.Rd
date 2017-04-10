@@ -17,6 +17,5 @@ F_fun(L, M, m, ...)
 A vector of size \eqn{k+1}
 }
 \description{
-This function shouln't be called directly by the user.
+Evaluate target function for equation solver
 }
-
