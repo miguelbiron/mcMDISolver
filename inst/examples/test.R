@@ -10,11 +10,13 @@
 #                   m = rep(0.5, n)
 #################################################################
 
+library(mcMDISolver)
+
 set.seed(1313) # for reproducibility
 
 n = 9 # number of variables
 k = n # number of restrictions
-S = 400000 # number of samples
+# S = 400000 # number of samples
 
 # restrictions
 chi = rnorm(n, 1.96, 0.1) # critical values
@@ -36,7 +38,7 @@ rp = function(S){
 
 ## SOLVE: stochastic
 start.time = proc.time()
-fit_MDI = mcMDISolver::solve_stoch(rp = rp, f = f, m = m)
+fit_MDI = mcMDISolver::solve_stoch(rp = rp, f = f, m = m, S = 10000, lr = 0.01)
 print(proc.time() - start.time)
 print(fit_MDI)
 
