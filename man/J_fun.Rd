@@ -11,7 +11,7 @@ J_fun(L, M, ...)
 
 \item{M}{a list of matrices}
 
-\item{...}{currently ignored}
+\item{...}{ignored}
 }
 \value{
 A matrix of size \eqn{(k+1) x (k+1)}

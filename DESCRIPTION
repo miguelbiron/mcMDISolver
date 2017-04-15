@@ -8,8 +8,7 @@ Imports:
 Authors@R: person("Miguel", "Biron", email = "miguelbl9@gmail.com", role = c("aut", "cre"))
 Description: This package implements a Monte Carlo approach to solving Minimum
     Discrimination Information (also called Minimum Cross - Entropy) with linear
-    equality constraints. Parallel implementation
-    is provided for faster computations.
+    equality constraints.
 License: GPL-3
 LazyData: TRUE
 RoxygenNote: 6.0.1

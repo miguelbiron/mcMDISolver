@@ -19,36 +19,23 @@ k = n # number of restrictions
 S = 50000 # number of samples
 
 # restrictions
-chi = rnorm(n, 1.96, 0.1) # critical values
+chi = rnorm(n, 1.96, 0.2) # critical values
 f = function(x, c = chi){ # vectorized over the size of x (n)
   return(x > c)
 }
 m = rep(.5, k) # rhs of restrictions
 
 # p-sampler
-# p is mvnorm with average cor = rho
+# p is multivariate normal with constant correlation rho
 rho = 0.6 # average correlation
-R = diag(n)
-R[upper.tri(R)] = pmin(pmax(rnorm(n*(n-1)/2, rho, 0.01), -1), 1)
-R[lower.tri(R)] = t(R)[lower.tri(R)]
+R = matrix(rep(rho, n * n), nrow = n)
+diag(R) = rep(1, n)
 
-## SOLVE: serial implementation
+## SOLVE
 start.time = proc.time()
-mcMDISolver::MDI_solve(mvtnorm::rmvnorm(n = S, sigma = R), f = f, m = m)
+fit_MDI = mcMDISolver::MDI_solve(mvtnorm::rmvnorm(n = S, sigma = R), f = f, m = m)
 print(proc.time() - start.time)
 print(fit_MDI$x)
-
-## SOLVE: parallelized implementation
-cl = parallel::makeCluster(getOption("cl.cores", 2))
-
-# export additional parameters of f
-parallel::clusterExport(cl, list("chi"))
-
-start.time = proc.time()
-fit_MDI = mcMDISolver::MDI_solve(mvtnorm::rmvnorm(n = S, sigma = R), f = f, m = m, cl = cl)
-print(proc.time() - start.time)
-print(fit_MDI$x)
-parallel::stopCluster(cl)
 
 ## Examine q distribution
 # Draw samples using Metropolis algorithm
@@ -59,8 +46,8 @@ log_dq = function(x, l = fit_MDI$x){
 }
 
 # draw from q
-mcmc_S = 2 * S
-burn = trunc(0.1 * mcmc_S) # number of samples to burn
+mcmc_S = S # effective number of samples
+burn = trunc(S) # number of samples to burn
 sample_q = mcmc::metrop(log_dq, initial = chi, nbatch = mcmc_S + burn)
 X_q = sample_q$batch[-(1:burn), ]
 

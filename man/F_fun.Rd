@@ -12,6 +12,8 @@ F_fun(L, M, m, ...)
 \item{M}{a list of matrices}
 
 \item{m}{rhs of restrictions}
+
+\item{...}{ignored}
 }
 \value{
 A vector of size \eqn{k+1}

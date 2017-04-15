@@ -4,22 +4,19 @@
 \alias{MDI_solve}
 \title{Solve MDI with linear equality constraints using a Monte Carlo approach.}
 \usage{
-MDI_solve(X, f, m, l_start = rep(0, k + 1), control = list(trace = 1),
-  cl = NULL)
+MDI_solve(X, f, ..., m, l_start = rep(0, k + 1), method = "Newton",
+  control = list(trace = 1))
 }
 \arguments{
 \item{X}{an \eqn{S x n} matrix containing \eqn{S} samples from \eqn{p}}
 
-\item{f}{a function returning a vector of size \eqn{k} that evaluates
-the LHS of restrictions}
+\item{f}{a function returning a vector of size \eqn{k} that evaluates the LHS of restrictions}
 
 \item{m}{a vector of size \eqn{k} with the RHS of the restrictions}
 
 \item{l_start}{a guess of the optimal \eqn{k + 1} lambdas. Default is \code{rep(0, k + 1)}}
 
 \item{control}{a list of parameters passed to \code{nleqslv}}
-
-\item{cl}{a cluster object for parallelized implementation}
 }
 \value{
 A list as returned by \code{nleqslv}
@@ -29,8 +26,9 @@ This function solves a Minimum Discrimination Information problem with linear
 equality constraints, as described in the package vignette.
 }
 \details{
-The non - linear set of equations is solved using package \code{nleqslv}
-with the Newton method. The rest of the parameters of this solver that
+The non - linear set of equations is solved using package \code{nleqslv}. By default,
+the method is set to \code{Newton}, as this usually results in faster convergences.
+The rest of the parameters of the solver that
 are not passed through the \code{control} list are left in their
 default values.
 
@@ -44,10 +42,6 @@ dimension of the space where \eqn{x} lives) and return a vector of size
 \eqn{k} (the number of non-trivial conditions), such that the first component
 of \eqn{f(x)} corresponds to the value of the first restriction function evaluated
 at \eqn{x}, the second component to the second restriction, and so on.
-
-Keep in mind that if you use the parallelized implementation, and \code{f}
-depends on some other variables, you need to export those using
-\code{parallel::clusterExport}.
 }
 \examples{
 #################################################################
@@ -86,21 +80,9 @@ R[lower.tri(R)] = t(R)[lower.tri(R)]
 
 ## SOLVE: serial implementation
 start.time = proc.time()
-mcMDISolver::MDI_solve(mvtnorm::rmvnorm(n = S, sigma = R), f = f, m = m)
+fit_MDI = mcMDISolver::MDI_solve(mvtnorm::rmvnorm(n = S, sigma = R), f = f, m = m)
 print(proc.time() - start.time)
 print(fit_MDI$x)
-
-## SOLVE: parallelized implementation
-cl = parallel::makeCluster(getOption("cl.cores", 2))
-
-# export additional parameters of f
-parallel::clusterExport(cl, list("chi"))
-
-start.time = proc.time()
-fit_MDI = mcMDISolver::MDI_solve(mvtnorm::rmvnorm(n = S, sigma = R), f = f, m = m, cl = cl)
-print(proc.time() - start.time)
-print(fit_MDI$x)
-parallel::stopCluster(cl)
 
 ## Examine q distribution
 # Draw samples using Metropolis algorithm
@@ -126,7 +108,7 @@ par(mfrow = c(1, 1))
 rowMeans(apply(X_q, 1, f)) - m
 }
 \seealso{
-\code{\link{parallel}}, \code{\link{nleqslv}} for details
+\code{\link{nleqslv}} for details
 on this non - linear equation solver, and \code{\link{mcmc}} for an
 implementation of the Metropolis algorithm.
 }
