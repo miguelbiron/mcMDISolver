@@ -6,10 +6,10 @@
 #' @return A matrix of size \eqn{(k+1) x (k+1)}
 #' @export
 J_fun = function(L, M, ...){
-  tempo = lapply(M, function(A){
+  J_list = lapply(M, function(A){
     exp(-sum(L[-1] * A[-1, 1])) * A
     })
-  return(exp(-L[1]) * Reduce('+', tempo) / length(tempo))
+  return(exp(-L[1]) * Reduce('+', J_list) / length(J_list))
 }
 
 #' Evaluate target function for equation solver
@@ -20,10 +20,10 @@ J_fun = function(L, M, ...){
 #' @return A vector of size \eqn{k+1}
 #' @export
 F_fun = function(L, M, m, ...){
-  tempo = lapply(M, function(A){
+  F_list = lapply(M, function(A){
     exp(-sum(L[-1] * A[-1, 1])) * A[, 1]
     })
-  return(c(1, m) - exp(-L[1]) * Reduce('+', tempo) / length(tempo))
+  return(c(1, m) - exp(-L[1]) * Reduce('+', F_list) / length(F_list))
 }
 
 #' Solve MDI with linear equality constraints using a Monte Carlo approach.

@@ -3,4 +3,3 @@
 export(F_fun)
 export(J_fun)
 export(MDI_solve)
-export(solve_stoch)
